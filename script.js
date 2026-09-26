@@ -1,943 +1,1060 @@
-var currentQuestion = 0;
-var answers = {};
-var userGender = "";
-var userName = "";
-var analysisTimer = null;
+const ANALYTICS_ENDPOINT =
+"https://script.google.com/macros/s/AKfycbyeNNDoCh8JL966OgvmIf54iAh0TBPEgDTpZ3WNgG1kX92WkJbAdot_OW-6s2Pw_weOmQ/exec";
 
-var questions = [
-    {
-        id: "style",
-        title: "کدام سبک بیشتر به سلیقه تو نزدیک است؟",
-        options: [
-            { text: "کلاسیک و شیک", value: "classic" },
-            { text: "خیابانی و آزاد", value: "street" },
-            { text: "مینیمال و ساده", value: "minimal" },
-            { text: "خاص و متفاوت", value: "unique" }
-        ]
-    },
 
-    {
-        id: "clothing",
-        title: "اگر بخواهی یک استایل انتخاب کنی، کدام را برمی‌داری؟",
-        options: [
-            { text: "پیراهن و شلوار کلاسیک", value: "formal" },
-            { text: "تی‌شرت و شلوار بگ", value: "street" },
-            { text: "لباس‌های ساده و تمیز", value: "minimal" },
-            { text: "ترکیب‌های عجیب و خاص", value: "unique" }
-        ]
-    },
+const questions = [
 
-    {
-        id: "hair",
-        title: "کدام مدل مو بیشتر برایت جذاب است؟",
-        options: [
-            { text: "کوتاه و مرتب", value: "classic" },
-            { text: "متوسط و طبیعی", value: "natural" },
-            { text: "بلند و خاص", value: "unique" },
-            { text: "مدل متفاوت و جسور", value: "street" }
-        ]
-    },
+{
+ title:"اگر قرار باشد استایلت را فقط با یک کلمه تعریف کنی؟",
+ subtitle:"اولین چیزی که واقعاً به ذهنت می‌رسد.",
+ answers:[
+  ["کلاسیک و مرتب",["classic","clean","formal"]],
+  ["خیابانی و آزاد",["street","bold","casual"]],
+  ["مینیمال و ساده",["minimal","clean","calm"]],
+  ["خاص و متفاوت",["unique","artistic","bold"]]
+ ]
+},
 
-    {
-        id: "vibe",
-        title: "بیشتر جذب چه وایبی می‌شوی؟",
-        options: [
-            { text: "آرام و مرموز", value: "calm" },
-            { text: "شوخ و پرانرژی", value: "fun" },
-            { text: "هنری و خلاق", value: "artistic" },
-            { text: "بااعتمادبه‌نفس و قوی", value: "confident" }
-        ]
-    },
+{
+ title:"کدام vibe بیشتر جذبت می‌کند؟",
+ subtitle:"چیزی که واقعاً دوست داری.",
+ answers:[
+  ["آرام و عمیق",["calm","deep","mysterious"]],
+  ["شوخ و پرانرژی",["funny","social","energy"]],
+  ["مرموز و کم‌حرف",["mysterious","deep","calm"]],
+  ["هنری و خلاق",["artistic","unique","deep"]]
+ ]
+},
 
-    {
-        id: "social",
-        title: "در یک جمع جدید معمولاً چه اتفاقی برایت می‌افتد؟",
-        options: [
-            { text: "سریع با بقیه صمیمی می‌شوم", value: "social" },
-            { text: "اول فضا را بررسی می‌کنم", value: "calm" },
-            { text: "با یک نفر راحت‌تر ارتباط می‌گیرم", value: "selective" },
-            { text: "خودم معمولاً جمع را راه می‌اندازم", value: "leader" }
-        ]
-    },
+{
+ title:"کدام مدل مو بیشتر vibe مورد علاقه‌ات را دارد؟",
+ subtitle:"روی حس کلی تمرکز کن.",
+ answers:[
+  ["مرتب و کلاسیک",["classic","clean"]],
+  ["طبیعی و کمی شلوغ",["street","casual","bold"]],
+  ["کوتاه و ساده",["minimal","clean"]],
+  ["متفاوت و خاص",["unique","artistic","bold"]]
+ ]
+},
 
-    {
-        id: "appearance",
-        title: "در ظاهر، کدام ویژگی بیشتر توجهت را جلب می‌کند؟",
-        options: [
-            { text: "چشم‌ها و نگاه", value: "eyes" },
-            { text: "مو و مدل مو", value: "hair" },
-            { text: "لبخند", value: "smile" },
-            { text: "استایل کلی", value: "style" }
-        ]
-    },
+{
+ title:"در لباس، چه چیزی مهم‌تر است؟",
+ subtitle:"چیزی که بیشترین تأثیر را روی انتخابت دارد.",
+ answers:[
+  ["جزئیات و تمیزی",["clean","classic"]],
+  ["راحتی و آزادی",["casual","street"]],
+  ["هماهنگی و سادگی",["minimal","calm"]],
+  ["خاص بودن",["unique","bold"]]
+ ]
+},
 
-    {
-        id: "personality",
-        title: "کدام ویژگی شخصیتی برایت جذاب‌تر است؟",
-        options: [
-            { text: "مهربان و قابل اعتماد", value: "kind" },
-            { text: "باهوش و منطقی", value: "smart" },
-            { text: "شوخ و بازیگوش", value: "fun" },
-            { text: "عمیق و هنری", value: "artistic" }
-        ]
-    },
+{
+ title:"اگر وارد یک جمع ناآشنا شوی...",
+ subtitle:"واکنش طبیعی خودت را انتخاب کن.",
+ answers:[
+  ["اول فضا را می‌سنجم.",["calm","deep"]],
+  ["زود با چند نفر گرم می‌گیرم.",["social","energy"]],
+  ["با یکی دو نفر حرف می‌زنم.",["calm","social"]],
+  ["اگر جالب باشد خودم بحث را راه می‌اندازم.",["energy","bold"]]
+ ]
+},
 
-    {
-        id: "weekend",
-        title: "یک روز آزاد را چطور می‌گذرانی؟",
-        options: [
-            { text: "بیرون رفتن و گشت‌وگذار", value: "social" },
-            { text: "فیلم، موسیقی یا بازی", value: "creative" },
-            { text: "تنهایی و استراحت", value: "calm" },
-            { text: "انجام یک کار جدید", value: "adventure" }
-        ]
-    },
+{
+ title:"یک عصر آزاد داری. انتخابت؟",
+ subtitle:"هیچ جواب درست یا غلطی وجود ندارد.",
+ answers:[
+  ["کافه و موسیقی",["calm","artistic","deep"]],
+  ["بیرون رفتن و برنامه ناگهانی",["energy","social"]],
+  ["فیلم یا سریال",["calm","minimal"]],
+  ["عکاسی، نوشتن یا ساختن چیزی",["artistic","unique"]]
+ ]
+},
 
-    {
-        id: "firstImpression",
-        title: "اولین چیزی که معمولاً در یک نفر متوجه می‌شوی چیست؟",
-        options: [
-            { text: "رفتار و طرز صحبت", value: "personality" },
-            { text: "چهره و نگاه", value: "appearance" },
-            { text: "لباس و استایل", value: "style" },
-            { text: "انرژی و حضورش", value: "vibe" }
-        ]
-    },
+{
+ title:"وقتی چیزی واقعاً اذیتت می‌کند...",
+ subtitle:"کدام واکنش به تو نزدیک‌تر است؟",
+ answers:[
+  ["سکوت می‌کنم و تحلیلش می‌کنم.",["deep","calm"]],
+  ["همان موقع حرفم را می‌زنم.",["bold","energy"]],
+  ["با یک آدم قابل اعتماد حرف می‌زنم.",["social","calm"]],
+  ["ازش چیزی خلاقانه می‌سازم.",["artistic","deep"]]
+ ]
+},
 
-    {
-        id: "choice",
-        title: "اگر مجبور باشی فقط یکی را انتخاب کنی...",
-        options: [
-            { text: "ظاهر خاص", value: "appearance" },
-            { text: "شخصیت جذاب", value: "personality" },
-            { text: "استایل بی‌نقص", value: "style" },
-            { text: "وایب فراموش‌نشدنی", value: "vibe" }
-        ]
-    }
+{
+ title:"کدام ویژگی در یک آدم بیشتر برایت جذاب است؟",
+ subtitle:"نزدیک‌ترین گزینه را انتخاب کن.",
+ answers:[
+  ["اعتمادبه‌نفس",["bold","formal"]],
+  ["شوخ‌طبعی",["funny","energy","social"]],
+  ["فهم و عمق فکری",["deep","calm"]],
+  ["مهربانی و خلاقیت",["artistic","calm","unique"]]
+ ]
+},
+
+{
+ title:"کدام تصویر بیشتر شبیه سلیقه توست؟",
+ subtitle:"فقط vibe را بگیر.",
+ answers:[
+  ["پیراهن ساده و ساعت کلاسیک",["classic","formal","clean"]],
+  ["تیشرت آزاد و شلوار بگ",["street","casual"]],
+  ["رنگ‌های خنثی و ساده",["minimal","clean"]],
+  ["ترکیبی که کمتر کسی می‌پوشد",["unique","bold"]]
+ ]
+},
+
+{
+ title:"در تصمیم‌های مهم بیشتر به چه چیزی تکیه می‌کنی؟",
+ subtitle:"جواب اولت را بده.",
+ answers:[
+  ["منطق",["deep","calm","minimal"]],
+  ["حس لحظه",["energy","bold"]],
+  ["ترکیبی از منطق و حس",["calm","social"]],
+  ["ایده‌ای کاملاً متفاوت",["unique","artistic","bold"]]
+ ]
+}
+
 ];
 
 
-var maleCelebrities = [
-    {
-        name: "نوید محمدزاده",
-        traits: ["unique", "street", "confident", "artistic"]
-    },
+const typeProfiles = {
 
-    {
-        name: "پارسا پیروزفر",
-        traits: ["classic", "calm", "minimal", "smart"]
-    },
+ classic:{
+  name:"THE CLASSIC",
+  description:"سلیقه‌ات بیشتر سمت جزئیات مرتب، ظاهر حساب‌شده و چیزهایی می‌رود که لازم نیست برای جلب توجه داد بزنند.",
+  traits:["مرتب","با‌جزئیات","با‌ثبات","سلیقه‌محور"]
+ },
 
-    {
-        name: "هوتن شکیبا",
-        traits: ["fun", "artistic", "natural", "social"]
-    }
+ street:{
+  name:"THE FREE SPIRIT",
+  description:"برای تو راحتی و آزادی فقط راحتی نیست؛ بخشی از هویت است. استایلی را می‌پسندی که شخصیت داشته باشد.",
+  traits:["آزاد","خودجوش","راحت","جسور"]
+ },
+
+ minimal:{
+  name:"THE MINIMALIST",
+  description:"زیادی شلوغت نمی‌کند. هماهنگی، سادگی و انتخاب دقیق برایت از انباشتن جزئیات مهم‌تر است.",
+  traits:["ساده","دقیق","آرام","تمیز"]
+ },
+
+ unique:{
+  name:"THE ORIGINAL",
+  description:"اگر چیزی بیش از حد معمولی باشد احتمالاً حوصله‌ات را سر می‌برد. تفاوت و خلاقیت برایت مهم است.",
+  traits:["خاص","خلاق","مستقل","جسور"]
+ }
+
+};
+
+
+const personalityProfiles = {
+
+ calm:{
+  name:"THE OBSERVER",
+  description:"پاسخ‌هایت بیشتر به سمت مشاهده، فکر کردن قبل از واکنش و توجه به لایه‌های پشت اتفاق‌ها می‌رود.",
+  traits:["مشاهده‌گر","متفکر","خونسرد"]
+ },
+
+ social:{
+  name:"THE CONNECTOR",
+  description:"از تعامل با آدم‌ها انرژی می‌گیری و ارتباط برایت بخش مهمی از تجربه زندگی است.",
+  traits:["اجتماعی","ارتباط‌گیر","گرم"]
+ },
+
+ deep:{
+  name:"THE DEEP THINKER",
+  description:"جواب‌هایت نشانه‌هایی از تحلیل‌گری و علاقه به معنی پشت اتفاق‌ها دارد.",
+  traits:["تحلیل‌گر","عمیق","کنجکاو"]
+ },
+
+ artistic:{
+  name:"THE CREATOR",
+  description:"ذهن تو تمایل دارد تجربه‌ها را به ایده، تصویر، نوشته یا چیز تازه‌ای تبدیل کند.",
+  traits:["خلاق","تصویری","ایده‌پرداز"]
+ },
+
+ energy:{
+  name:"THE SPARK",
+  description:"در جواب‌هایت انرژی، حرکت و واکنش سریع‌تر دیده می‌شود.",
+  traits:["پرانرژی","سریع","خودجوش"]
+ },
+
+ bold:{
+  name:"THE BOLD MIND",
+  description:"جواب‌هایت بیشتر به سمت استقلال، جسارت و انتخاب چیزی می‌رود که واقعاً خودت می‌خواهی.",
+  traits:["مستقل","جسور","قاطع"]
+ }
+
+};
+
+
+const maleCelebrities = [
+
+{
+ name:"پارسا پیروزفر",
+ description:"یک match در سمت vibe کلاسیک، آرام و هنری.",
+ photo:"https://commons.wikimedia.org/wiki/Special:FilePath/Parsa%20Pirouzfar.jpg",
+ source:"https://commons.wikimedia.org/wiki/File:Parsa_Pirouzfar.jpg",
+ tags:["classic","calm","artistic","minimal","deep"]
+},
+
+{
+ name:"نوید محمدزاده",
+ description:"یک match در سمت vibe جسور، متفاوت و پرانرژی.",
+ photo:"https://commons.wikimedia.org/wiki/Special:FilePath/Navid%20Mohammadzadeh%201398111103001195198537874.jpg",
+ source:"https://commons.wikimedia.org/wiki/",
+ tags:["bold","street","energy","unique","artistic"]
+},
+
+{
+ name:"هوتن شکیبا",
+ description:"یک match در سمت vibe خلاق، اجتماعی و خودجوش.",
+ photo:"https://commons.wikimedia.org/wiki/Special:FilePath/Hootan%20Shakiba%202022.jpeg",
+ source:"https://commons.wikimedia.org/wiki/Category:Hootan_Shakiba",
+ tags:["funny","social","artistic","energy","unique"]
+}
+
 ];
 
 
-var femaleCelebrities = [
-    {
-        name: "ترانه علیدوستی",
-        traits: ["classic", "calm", "smart", "artistic"]
-    },
+const femaleCelebrities = [
 
-    {
-        name: "الناز شاکردوست",
-        traits: ["unique", "style", "confident", "appearance"]
-    },
+{
+ name:"ترانه علیدوستی",
+ description:"یک match در سمت vibe آرام، عمیق و مینیمال.",
+ photo:"https://commons.wikimedia.org/wiki/Special:FilePath/Taraneh%20Alidoosti%20-%20Istanbul.jpg",
+ source:"https://commons.wikimedia.org/wiki/File:Taraneh_Alidoosti_-_Istanbul.jpg",
+ tags:["classic","calm","deep","minimal","artistic"]
+},
 
-    {
-        name: "پریناز ایزدیار",
-        traits: ["classic", "minimal", "natural", "calm"]
-    }
+{
+ name:"الناز شاکردوست",
+ description:"یک match در سمت vibe جسور، متفاوت و پرانرژی.",
+ photo:"https://commons.wikimedia.org/wiki/Special:FilePath/Elnaz%20Shakerdoost%202018%20Cropped.jpg",
+ source:"https://commons.wikimedia.org/wiki/",
+ tags:["bold","unique","energy","classic","artistic"]
+},
+
+{
+ name:"پریناز ایزدیار",
+ description:"یک match در سمت vibe کلاسیک، هنری و متعادل.",
+ photo:"https://commons.wikimedia.org/wiki/Special:FilePath/Parinaz%20Izadyar%202019.jpg",
+ source:"https://commons.wikimedia.org/wiki/",
+ tags:["classic","minimal","calm","artistic","clean"]
+}
+
 ];
 
 
-function getElement(id) {
-    return document.getElementById(id);
+const state = {
+ name:"",
+ gender:"",
+ currentQuestion:0,
+ answers:[],
+ type:null,
+ personality:null,
+ celebrity:null
+};
+
+
+const $ = id => document.getElementById(id);
+
+
+const screens = {
+ intro:$("introScreen"),
+ identity:$("identityScreen"),
+ quiz:$("quizScreen"),
+ analysis:$("analysisScreen"),
+ result:$("resultScreen")
+};
+
+
+function showScreen(screen){
+
+ Object.values(screens).forEach(
+   s => s.classList.remove("active")
+ );
+
+ screen.classList.add("active");
+
+ window.scrollTo({
+   top:0,
+   behavior:"smooth"
+ });
+
 }
 
 
-function showScreen(screenId) {
-    var screens = document.querySelectorAll(".screen");
+function fa(number){
 
-    for (var i = 0; i < screens.length; i++) {
-        screens[i].classList.remove("active");
-    }
+ return String(number)
+   .replace(/\d/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
 
-    var target = getElement(screenId);
-
-    if (target) {
-        target.classList.add("active");
-    }
 }
 
 
-function startTest() {
-    userName = "";
-    userGender = "";
-    answers = {};
-    currentQuestion = 0;
+function updateTheme(){
 
-    var nameInput = getElement("nameInput");
+ document.body.dataset.theme =
+   state.gender === "female"
+   ? "female"
+   : "male";
 
-    if (nameInput) {
-        nameInput.value = "";
-    }
-
-    showScreen("identityScreen");
 }
 
 
-function selectGender(gender) {
-    userGender = gender;
+function renderProgress(){
 
-    var maleCard = getElement("maleCard");
-    var femaleCard = getElement("femaleCard");
+ const current =
+   state.currentQuestion + 1;
 
-    if (maleCard) {
-        maleCard.classList.remove("selected");
-    }
+ const total =
+   questions.length;
 
-    if (femaleCard) {
-        femaleCard.classList.remove("selected");
-    }
+ const percent =
+   Math.round(current / total * 100);
 
-    if (gender === "male" && maleCard) {
-        maleCard.classList.add("selected");
-    }
+ $("progressArea")
+   .classList.remove("hidden");
 
-    if (gender === "female" && femaleCard) {
-        femaleCard.classList.add("selected");
-    }
+ $("progressText")
+   .textContent =
+   `${fa(current)} از ${fa(total)}`;
 
-    document.body.classList.remove("male-theme");
-    document.body.classList.remove("female-theme");
+ $("progressPercent")
+   .textContent =
+   `${fa(percent)}٪`;
 
-    if (gender === "male") {
-        document.body.classList.add("male-theme");
-    }
+ $("progressBar")
+   .style.width =
+   `${percent}%`;
 
-    if (gender === "female") {
-        document.body.classList.add("female-theme");
-    }
+ $("stepCounter")
+   .textContent =
+   `0${current} / ${String(total).padStart(2,"0")}`;
+
 }
 
 
-function continueFromIdentity() {
-    var nameInput = getElement("nameInput");
+function renderQuestion(){
 
-    if (nameInput) {
-        userName = nameInput.value.trim();
-    }
+ const question =
+   questions[state.currentQuestion];
 
-    if (userGender === "") {
-        alert("اول جنسیتت رو انتخاب کن.");
-        return;
-    }
+ $("questionKicker")
+   .textContent =
+   `QUESTION ${String(state.currentQuestion+1).padStart(2,"0")}`;
 
-    if (userName === "") {
-        alert("اسمت رو وارد کن.");
-        return;
-    }
+ $("questionTitle")
+   .textContent =
+   question.title;
 
-    currentQuestion = 0;
-    answers = {};
+ $("questionSubtitle")
+   .textContent =
+   question.subtitle;
 
-    showQuestion();
-    showScreen("questionScreen");
-}
+ const answers =
+   $("answers");
 
+ answers.innerHTML = "";
 
-function showQuestion() {
-    var question = questions[currentQuestion];
+ question.answers.forEach(
+   (item,index)=>{
 
-    if (!question) {
-        return;
-    }
+    const button =
+      document.createElement("button");
 
-    var questionTitle = getElement("questionTitle");
-    var optionsContainer = getElement("optionsContainer");
-    var progressText = getElement("progressText");
-    var progressFill = getElement("progressFill");
-    var questionNumber = getElement("questionNumber");
-
-    if (questionTitle) {
-        questionTitle.textContent = question.title;
-    }
-
-    if (progressText) {
-        progressText.textContent =
-            (currentQuestion + 1) + " / " + questions.length;
-    }
-
-    if (questionNumber) {
-        questionNumber.textContent =
-            currentQuestion + 1;
-    }
-
-    if (progressFill) {
-        var progress =
-            ((currentQuestion + 1) / questions.length) * 100;
-
-        progressFill.style.width = progress + "%";
-    }
-
-    if (!optionsContainer) {
-        return;
-    }
-
-    optionsContainer.innerHTML = "";
-
-    for (var i = 0; i < question.options.length; i++) {
-        createOption(
-            question.options[i],
-            optionsContainer
-        );
-    }
-}
-
-
-function createOption(option, container) {
-    var button = document.createElement("button");
+    button.className = "answer";
 
     button.type = "button";
-    button.className = "option";
-    button.textContent = option.text;
 
-    button.addEventListener("click", function () {
-        selectAnswer(option.value);
+    if(
+      state.answers[state.currentQuestion]
+      === index
+    ){
+
+      button.classList.add("selected");
+
+    }
+
+    const radio =
+      document.createElement("span");
+
+    radio.className = "radio";
+
+    const text =
+      document.createElement("span");
+
+    text.textContent = item[0];
+
+    button.append(
+      radio,
+      text
+    );
+
+    button.onclick = ()=>{
+
+      state.answers[state.currentQuestion] =
+        index;
+
+      document
+        .querySelectorAll(".answer")
+        .forEach(
+          x=>x.classList.remove("selected")
+        );
+
+      button.classList.add("selected");
+
+      $("nextBtn").disabled = false;
+
+    };
+
+    answers.appendChild(button);
+
+   }
+ );
+
+ $("nextBtn").disabled =
+   state.answers[state.currentQuestion] == null;
+
+ renderProgress();
+
+}
+
+
+function calculateScores(){
+
+ const typeScores = {
+  classic:0,
+  street:0,
+  minimal:0,
+  unique:0
+ };
+
+ const personalityScores = {
+  calm:0,
+  social:0,
+  deep:0,
+  artistic:0,
+  energy:0,
+  bold:0
+ };
+
+
+ state.answers.forEach(
+  (answerIndex,qIndex)=>{
+
+   const tags =
+     questions[qIndex]
+       .answers[answerIndex][1];
+
+   tags.forEach(
+    tag=>{
+
+     if(typeScores[tag] !== undefined)
+       typeScores[tag]++;
+
+     if(personalityScores[tag] !== undefined)
+       personalityScores[tag]++;
+
+    }
+   );
+
+  }
+ );
+
+
+ return {
+  typeScores,
+  personalityScores
+ };
+
+}
+
+
+function topScore(scores){
+
+ const sorted =
+   Object.entries(scores)
+   .sort((a,b)=>b[1]-a[1]);
+
+ const winner =
+   sorted[0];
+
+ const total =
+   Object.values(scores)
+   .reduce((a,b)=>a+b,0) || 1;
+
+ return {
+  key:winner[0],
+  score:winner[1],
+  percentage:
+    Math.round(
+      winner[1]/total*100
+    )
+ };
+
+}
+
+
+function celebrityMatch(type){
+
+ const scores =
+   calculateScores();
+
+ const pool =
+   state.gender === "male"
+   ? femaleCelebrities
+   : maleCelebrities;
+
+
+ const result =
+   pool.map(person=>{
+
+    let score = 0;
+
+    person.tags.forEach(tag=>{
+
+      score +=
+        (scores.typeScores[tag] || 0) * 2;
+
+      score +=
+        scores.personalityScores[tag] || 0;
+
     });
 
-    container.appendChild(button);
-}
+    if(
+      person.tags.includes(type.key)
+    ){
 
-
-function selectAnswer(value) {
-    var question = questions[currentQuestion];
-
-    if (!question) {
-        return;
-    }
-
-    answers[question.id] = value;
-
-    currentQuestion++;
-
-    if (currentQuestion >= questions.length) {
-        startAnalysis();
-        return;
-    }
-
-    showQuestion();
-}
-
-
-function startAnalysis() {
-    showScreen("analyzingScreen");
-
-    var analysisText = getElement("analysisText");
-    var analysisProgress = getElement("analysisProgress");
-
-    if (analysisText) {
-        analysisText.textContent =
-            "دارم جواب‌هات رو بررسی می‌کنم...";
-    }
-
-    if (analysisProgress) {
-        analysisProgress.style.width = "0%";
-    }
-
-    var progress = 0;
-
-    if (analysisTimer) {
-        clearInterval(analysisTimer);
-    }
-
-    analysisTimer = setInterval(function () {
-
-        progress += 10;
-
-        if (analysisProgress) {
-            analysisProgress.style.width =
-                progress + "%";
-        }
-
-        if (progress >= 100) {
-
-            clearInterval(analysisTimer);
-
-            analysisTimer = null;
-
-            setTimeout(function () {
-                generateResult();
-            }, 400);
-        }
-
-    }, 120);
-}
-
-
-function calculatePersonality() {
-
-    var scores = {
-        social: 0,
-        calm: 0,
-        creative: 0,
-        logical: 0,
-        artistic: 0,
-        energetic: 0
-    };
-
-
-    if (answers.social === "social") {
-        scores.social += 3;
-    }
-
-    if (answers.social === "leader") {
-        scores.social += 2;
-        scores.energetic += 2;
-    }
-
-    if (answers.social === "calm") {
-        scores.calm += 3;
-    }
-
-    if (answers.social === "selective") {
-        scores.calm += 2;
-    }
-
-
-    if (answers.personality === "smart") {
-        scores.logical += 3;
-    }
-
-    if (answers.personality === "fun") {
-        scores.energetic += 3;
-    }
-
-    if (answers.personality === "artistic") {
-        scores.artistic += 3;
-    }
-
-    if (answers.personality === "kind") {
-        scores.calm += 2;
-    }
-
-
-    if (answers.weekend === "social") {
-        scores.social += 2;
-    }
-
-    if (answers.weekend === "creative") {
-        scores.creative += 3;
-    }
-
-    if (answers.weekend === "calm") {
-        scores.calm += 3;
-    }
-
-    if (answers.weekend === "adventure") {
-        scores.energetic += 3;
-    }
-
-
-    if (answers.firstImpression === "personality") {
-        scores.logical += 1;
-    }
-
-    if (answers.firstImpression === "appearance") {
-        scores.creative += 1;
-    }
-
-    if (answers.firstImpression === "style") {
-        scores.artistic += 1;
-    }
-
-    if (answers.firstImpression === "vibe") {
-        scores.social += 1;
-    }
-
-
-    var personalityNames = {
-        social: "اجتماعی و ارتباط‌محور",
-        calm: "آرام و عمیق",
-        creative: "خلاق و تجربه‌گرا",
-        logical: "منطقی و تحلیل‌گر",
-        artistic: "هنری و زیبایی‌شناس",
-        energetic: "پرانرژی و ماجراجو"
-    };
-
-
-    var highestKey = "calm";
-    var highestScore = scores.calm;
-
-    for (var key in scores) {
-
-        if (scores[key] > highestScore) {
-            highestScore = scores[key];
-            highestKey = key;
-        }
+      score += 3;
 
     }
-
 
     return {
-        name: personalityNames[highestKey],
-        key: highestKey,
-        scores: scores
+      person,
+      score
     };
+
+   })
+   .sort(
+     (a,b)=>b.score-a.score
+   )[0];
+
+
+ const percentage =
+   Math.max(
+     58,
+     Math.min(
+       97,
+       Math.round(
+         result.score / 45 * 100
+       )
+     )
+   );
+
+
+ return {
+   ...result.person,
+   percentage
+ };
+
 }
 
 
-function calculateType() {
+function startAnalysis(){
 
-    var scores = {
-        classic: 0,
-        street: 0,
-        minimal: 0,
-        unique: 0,
-        artistic: 0,
-        calm: 0,
-        confident: 0
-    };
+ $("progressArea")
+   .classList.add("hidden");
 
+ $("stepCounter")
+   .textContent =
+   "ANALYSIS";
 
-    var keys = [
-        "style",
-        "clothing",
-        "hair",
-        "vibe",
-        "appearance",
-        "personality",
-        "weekend",
-        "firstImpression",
-        "choice"
-    ];
+ showScreen(
+   screens.analysis
+ );
 
+ const messages = [
 
-    for (var i = 0; i < keys.length; i++) {
+  [
+   "دارم الگوهای انتخابت رو پیدا می‌کنم...",
+   "ظاهر فقط نصف ماجراست."
+  ],
 
-        var answer = answers[keys[i]];
+  [
+   "دارم جواب‌ها رو کنار هم می‌چینم...",
+   "هر انتخاب یه تکه از پازله."
+  ],
 
+  [
+   "تقریباً آماده‌ست...",
+   "ببینیم TYPE تو چی میگه."
+  ]
 
-        if (answer === "classic") {
-            scores.classic += 2;
-        }
+ ];
 
-        if (answer === "street") {
-            scores.street += 2;
-        }
+ let i=0;
 
-        if (answer === "minimal") {
-            scores.minimal += 2;
-        }
+ $("analysisTitle")
+   .textContent =
+   messages[0][0];
 
-        if (answer === "unique") {
-            scores.unique += 2;
-        }
-
-        if (answer === "artistic") {
-            scores.artistic += 2;
-        }
-
-        if (answer === "calm") {
-            scores.calm += 2;
-        }
-
-        if (answer === "confident") {
-            scores.confident += 2;
-        }
+ $("analysisText")
+   .textContent =
+   messages[0][1];
 
 
-        if (answer === "style") {
-            scores.unique += 1;
-        }
+ const timer =
+   setInterval(()=>{
 
-        if (answer === "appearance") {
-            scores.classic += 1;
-        }
+    i++;
 
-        if (answer === "vibe") {
-            scores.artistic += 1;
-        }
+    if(i < messages.length){
 
-        if (answer === "personality") {
-            scores.calm += 1;
-        }
+     $("analysisTitle")
+       .textContent =
+       messages[i][0];
+
+     $("analysisText")
+       .textContent =
+       messages[i][1];
 
     }
 
-
-    var typeNames = {
-        classic: "Classic Type",
-        street: "Street Type",
-        minimal: "Minimal Type",
-        unique: "Unique Type",
-        artistic: "Artistic Type",
-        calm: "Calm Type",
-        confident: "Confident Type"
-    };
+   },700);
 
 
-    var highestKey = "classic";
-    var highestScore = scores.classic;
+ setTimeout(()=>{
 
+  clearInterval(timer);
 
-    for (var key in scores) {
+  generateResult();
 
-        if (scores[key] > highestScore) {
-            highestScore = scores[key];
-            highestKey = key;
-        }
+ },2400);
 
-    }
-
-
-    return {
-        name: typeNames[highestKey],
-        key: highestKey,
-        scores: scores
-    };
 }
 
 
-function calculateCelebrityMatch(typeResult) {
+function generateResult(){
 
-    var celebrities;
+ const scores =
+   calculateScores();
 
+ state.type =
+   topScore(scores.typeScores);
 
-    if (userGender === "male") {
-        celebrities = maleCelebrities;
-    } else {
-        celebrities = femaleCelebrities;
-    }
+ state.personality =
+   topScore(scores.personalityScores);
 
-
-    var bestCelebrity = celebrities[0];
-    var bestScore = -1;
-
-
-    for (var i = 0; i < celebrities.length; i++) {
-
-        var celebrity = celebrities[i];
-
-        var score = 0;
+ state.celebrity =
+   celebrityMatch(state.type);
 
 
-        for (var j = 0; j < celebrity.traits.length; j++) {
+ const type =
+   typeProfiles[state.type.key];
 
-            var trait = celebrity.traits[j];
-
-
-            if (answers.style === trait) {
-                score += 2;
-            }
-
-            if (answers.clothing === trait) {
-                score += 2;
-            }
-
-            if (answers.hair === trait) {
-                score += 1;
-            }
-
-            if (answers.vibe === trait) {
-                score += 2;
-            }
-
-            if (answers.personality === trait) {
-                score += 2;
-            }
-
-            if (answers.firstImpression === trait) {
-                score += 1;
-            }
-
-            if (typeResult.key === trait) {
-                score += 2;
-            }
-
-        }
+ const personality =
+   personalityProfiles[state.personality.key];
 
 
-        if (score > bestScore) {
-            bestScore = score;
-            bestCelebrity = celebrity;
-        }
+ $("resultGreeting")
+   .textContent =
+   `${state.name}، این شد نتیجه‌ات`;
 
-    }
+ $("typeName")
+   .textContent =
+   type.name;
 
+ $("typeDescription")
+   .textContent =
+   type.description;
 
-    var percentage = 70 + (bestScore * 3);
-
-
-    if (percentage > 97) {
-        percentage = 97;
-    }
-
-    if (percentage < 70) {
-        percentage = 70;
-    }
+ $("typeScore")
+   .textContent =
+   state.type.percentage;
 
 
-    return {
-        name: bestCelebrity.name,
-        percentage: percentage
-    };
+ $("personalityName")
+   .textContent =
+   personality.name;
+
+ $("personalityDescription")
+   .textContent =
+   personality.description;
+
+
+ $("traitList").innerHTML =
+   personality.traits
+   .map(
+     x=>`<span class="trait">${x}</span>`
+   )
+   .join("");
+
+
+ $("celebrityName")
+   .textContent =
+   state.celebrity.name;
+
+ $("celebrityDescription")
+   .textContent =
+   state.celebrity.description;
+
+ $("celebrityMatch")
+   .textContent =
+   `${state.celebrity.percentage}%`;
+
+ $("photoSource")
+   .href =
+   state.celebrity.source;
+
+
+ const image =
+   $("celebrityImage");
+
+ image.classList.remove("loaded");
+
+ $("photoFallback")
+   .style.display =
+   "grid";
+
+ image.src =
+   state.celebrity.photo;
+
+ image.alt =
+   state.celebrity.name;
+
+
+ $("summaryText")
+   .textContent =
+   `ترکیب جواب‌ها بیشتر به ${type.name}
+   و ${personality.name} نزدیک شد.
+   این نتیجه صرفاً یک برداشت سرگرمی‌محور
+   از انتخاب‌های توست و تشخیص علمی شخصیت نیست.`;
+
+
+ showScreen(
+   screens.result
+ );
+
+
+ sendReport();
+
 }
 
 
-function getTypeDescription(typeKey) {
+function sendReport(){
 
-    var descriptions = {
-
-        classic:
-            "سلیقه‌ات بیشتر سمت چیزهای مرتب، باوقار و ماندگار می‌رود. معمولاً ظاهر تمیز و جزئیات حساب‌شده بیشتر از شلوغی توجهت را جلب می‌کند.",
-
-        street:
-            "به استایل آزادتر و راحت‌تر علاقه داری و احتمالاً لباس‌هایی که شخصیت و انرژی بیشتری نشان می‌دهند برایت جذاب‌ترند.",
-
-        minimal:
-            "سادگی برایت خسته‌کننده نیست. برعکس، احتمالاً وقتی چیزی بدون شلوغی و اضافه‌کاری خوب به نظر برسد، بیشتر قدرش را می‌دانی.",
-
-        unique:
-            "چیزهای معمولی همیشه توجهت را نگه نمی‌دارند. احتمالاً ویژگی متفاوت یا جزئیاتی که باعث شود یک نفر از بقیه جدا شود برایت مهم است.",
-
-        artistic:
-            "در انتخاب‌هایت ردپای زیبایی‌شناسی و خلاقیت دیده می‌شود. برایت فقط خود ظاهر مهم نیست، بلکه حس و داستان پشت آن هم اهمیت دارد.",
-
-        calm:
-            "به نظر می‌رسد آرامش و حس قابل اعتماد بودن برایت جذاب است و معمولاً قبل از قضاوت، کمی بیشتر مشاهده می‌کنی.",
-
-        confident:
-            "اعتمادبه‌نفس و حضور پررنگ می‌تواند توجهت را جلب کند. آدم‌هایی که خودشان را راحت‌تر نشان می‌دهند احتمالاً برایت جذاب‌ترند."
-    };
+ if(!ANALYTICS_ENDPOINT)
+   return;
 
 
-    return descriptions[typeKey] ||
-        descriptions.classic;
+ const report = {
+
+  timestamp:
+    new Date().toISOString(),
+
+  name:
+    state.name,
+
+  gender:
+    state.gender,
+
+  answers:
+    state.answers.map(
+      (answer,q)=>({
+       question:
+         questions[q].title,
+
+       answer:
+         questions[q]
+         .answers[answer][0]
+      })
+    ),
+
+  type:
+    typeProfiles[state.type.key].name,
+
+  typeKey:
+    state.type.key,
+
+  typeScore:
+    state.type.percentage,
+
+  personality:
+    personalityProfiles[
+      state.personality.key
+    ].name,
+
+  personalityKey:
+    state.personality.key,
+
+  celebrity:
+    state.celebrity.name,
+
+  matchPercentage:
+    state.celebrity.percentage
+
+ };
+
+
+ const data =
+   JSON.stringify(report);
+
+
+ try{
+
+  if(
+    navigator.sendBeacon
+  ){
+
+    const blob =
+      new Blob(
+        [data],
+        {
+          type:
+            "text/plain;charset=utf-8"
+        }
+      );
+
+    if(
+      navigator.sendBeacon(
+        ANALYTICS_ENDPOINT,
+        blob
+      )
+    ){
+
+      return;
+
+    }
+
+  }
+
+ }catch(error){}
+
+
+ fetch(
+   ANALYTICS_ENDPOINT,
+   {
+    method:"POST",
+    mode:"no-cors",
+    headers:{
+      "Content-Type":
+        "text/plain;charset=utf-8"
+    },
+    body:data,
+    keepalive:true
+   }
+ ).catch(()=>{});
+
 }
 
 
-function generateResult() {
+function reset(){
 
-    var personality =
-        calculatePersonality();
+ state.name="";
+ state.gender="";
+ state.currentQuestion=0;
+ state.answers=[];
+ state.type=null;
+ state.personality=null;
+ state.celebrity=null;
 
-    var typeResult =
-        calculateType();
+ $("nameInput").value="";
 
-    var celebrity =
-        calculateCelebrityMatch(typeResult);
+ $("nameCount")
+   .textContent="۰/۴۰";
 
+ document
+   .querySelectorAll(".gender-choice")
+   .forEach(
+     x=>x.classList.remove("selected")
+   );
 
-    var nameElement =
-        getElement("resultName");
+ $("identityNextBtn")
+   .disabled=true;
 
-    var typeElement =
-        getElement("typeResult");
+ $("progressArea")
+   .classList.add("hidden");
 
-    var personalityElement =
-        getElement("personalityResult");
+ $("stepCounter")
+   .textContent="START";
 
-    var celebrityElement =
-        getElement("celebrityResult");
+ updateTheme();
 
-    var matchFill =
-        getElement("matchFill");
+ showScreen(
+   screens.intro
+ );
 
-    var matchPercentage =
-        getElement("matchPercentage");
-
-    var matchDescription =
-        getElement("matchDescription");
-
-    var typeDescription =
-        getElement("typeDescription");
-
-
-    if (nameElement) {
-        nameElement.textContent =
-            userName;
-    }
-
-
-    if (typeElement) {
-        typeElement.textContent =
-            typeResult.name;
-    }
-
-
-    if (personalityElement) {
-        personalityElement.textContent =
-            personality.name;
-    }
-
-
-    if (celebrityElement) {
-        celebrityElement.textContent =
-            celebrity.name;
-    }
-
-
-    if (matchFill) {
-        matchFill.style.width =
-            celebrity.percentage + "%";
-    }
-
-
-    if (matchPercentage) {
-        matchPercentage.textContent =
-            celebrity.percentage + "%";
-    }
-
-
-    if (matchDescription) {
-
-        matchDescription.textContent =
-            "بر اساس جواب‌هایی که دادی، از نظر سبک، ظاهر و وایب کلی بیشترین شباهت سلیقه‌ای تو با " +
-            celebrity.name +
-            " دیده شد.";
-    }
-
-
-    if (typeDescription) {
-
-        typeDescription.textContent =
-            getTypeDescription(typeResult.key);
-    }
-
-
-    showScreen("resultScreen");
 }
 
 
-function restartTest() {
-
-    if (analysisTimer) {
-        clearInterval(analysisTimer);
-        analysisTimer = null;
-    }
+/* EVENTS */
 
 
-    currentQuestion = 0;
+$("startBtn").onclick = ()=>{
 
-    answers = {};
+ $("stepCounter")
+   .textContent="IDENTITY";
 
-    userGender = "";
+ showScreen(
+   screens.identity
+ );
 
-    userName = "";
-
-
-    document.body.classList.remove(
-        "male-theme"
-    );
-
-    document.body.classList.remove(
-        "female-theme"
-    );
+};
 
 
-    var nameInput =
-        getElement("nameInput");
+$("nameInput").oninput =
+event=>{
+
+ state.name =
+   event.target.value;
+
+ $("nameCount")
+   .textContent =
+   `${fa(state.name.length)}/۴۰`;
+
+ $("identityNextBtn")
+   .disabled =
+   !state.name.trim() ||
+   !state.gender;
+
+};
 
 
-    if (nameInput) {
-        nameInput.value = "";
-    }
+document
+.querySelectorAll(".gender-choice")
+.forEach(button=>{
+
+ button.onclick=()=>{
+
+  document
+   .querySelectorAll(".gender-choice")
+   .forEach(
+     x=>x.classList.remove("selected")
+   );
+
+  button.classList.add("selected");
+
+  state.gender =
+    button.dataset.gender;
+
+  updateTheme();
+
+  $("identityNextBtn")
+    .disabled =
+    !state.name.trim();
+
+ };
+
+});
 
 
-    var maleCard =
-        getElement("maleCard");
+$("identityNextBtn").onclick=()=>{
 
-    var femaleCard =
-        getElement("femaleCard");
+ if(
+   !state.name.trim() ||
+   !state.gender
+ ) return;
 
+ state.currentQuestion=0;
 
-    if (maleCard) {
-        maleCard.classList.remove(
-            "selected"
-        );
-    }
+ renderQuestion();
 
+ showScreen(
+   screens.quiz
+ );
 
-    if (femaleCard) {
-        femaleCard.classList.remove(
-            "selected"
-        );
-    }
+};
 
 
-    showScreen("introScreen");
-}
+$("identityBackBtn").onclick=()=>{
+
+ showScreen(
+   screens.intro
+ );
+
+ $("stepCounter")
+   .textContent="START";
+
+};
 
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+$("nextBtn").onclick=()=>{
 
-        var startButton =
-            getElement("startBtn");
-
-        var continueButton =
-            getElement("continueBtn");
-
-        var maleCard =
-            getElement("maleCard");
-
-        var femaleCard =
-            getElement("femaleCard");
-
-        var restartButton =
-            getElement("restartBtn");
+ if(
+   state.answers[state.currentQuestion]
+   == null
+ ) return;
 
 
-        if (startButton) {
-            startButton.addEventListener(
-                "click",
-                startTest
-            );
-        }
+ if(
+   state.currentQuestion <
+   questions.length-1
+ ){
+
+   state.currentQuestion++;
+
+   renderQuestion();
+
+ }else{
+
+   startAnalysis();
+
+ }
+
+};
 
 
-        if (continueButton) {
-            continueButton.addEventListener(
-                "click",
-                continueFromIdentity
-            );
-        }
+$("backBtn").onclick=()=>{
+
+ if(
+   state.currentQuestion === 0
+ ){
+
+  showScreen(
+    screens.identity
+  );
+
+  $("progressArea")
+    .classList.add("hidden");
+
+  return;
+
+ }
+
+ state.currentQuestion--;
+
+ renderQuestion();
+
+};
 
 
-        if (maleCard) {
-            maleCard.addEventListener(
-                "click",
-                function () {
-                    selectGender("male");
-                }
-            );
-        }
+$("restartBtn").onclick =
+reset;
 
 
-        if (femaleCard) {
-            femaleCard.addEventListener(
-                "click",
-                function () {
-                    selectGender("female");
-                }
-            );
-        }
+$("celebrityImage").onload = ()=>{
+
+ $("celebrityImage")
+   .classList.add("loaded");
+
+ $("photoFallback")
+   .style.display =
+   "none";
+
+};
 
 
-        if (restartButton) {
-            restartButton.addEventListener(
-                "click",
-                restartTest
-            );
-        }
+$("celebrityImage").onerror = ()=>{
+
+ $("celebrityImage")
+   .classList.remove("loaded");
+
+ $("photoFallback")
+   .style.display =
+   "grid";
+
+};
 
 
-        showScreen("introScreen");
-
-    }
-);
+updateTheme();
