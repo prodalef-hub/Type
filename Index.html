@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>TYPE.</title>
+
+    <meta
+        name="description"
+        content="TYPE. یک تست سرگرم‌کننده برای شناخت استایل، وایب و شخصیت تو."
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <!-- INTRO -->
+        <section
+            id="introScreen"
+            class="screen active"
+        >
+            <div class="glow"></div>
+
+            <div class="intro-card glass">
+
+                <div class="logo">
+                    TYPE<span>.</span>
+                </div>
+
+                <div class="intro-line"></div>
+
+                <h1>
+                    ببینیم
+                    <br>
+                    <span>TYPE</span>
+                    تو چیه.
+                </h1>
+
+                <p class="intro-description">
+                    چند سؤال کوتاه درباره سلیقه، استایل و شخصیتت.
+                    <br>
+                    آخرش می‌فهمی چه تیپی داری و کدام چهره مشهور
+                    بیشتر به سلیقه‌ات نزدیک است.
+                </p>
+
+                <button
+                    id="startBtn"
+                    class="primary-btn"
+                    type="button"
+                >
+                    شروع تست
+                    <span>←</span>
+                </button>
+
+                <div class="intro-note">
+                    بدون ثبت‌نام · بدون شماره · فقط جواب بده
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- IDENTITY -->
+        <section
+            id="identityScreen"
+            class="screen"
+        >
+            <div class="glass form-card">
+
+                <div class="step-label">
+                    STEP 01
+                </div>
+
+                <h2>
+                    اول یه معرفی کوچیک
+                </h2>
+
+                <p class="section-description">
+                    اسمت رو بنویس و تم مورد علاقه‌ات رو انتخاب کن.
+                </p>
+
+                <div class="input-group">
+
+                    <label for="nameInput">
+                        اسمت
+                    </label>
+
+                    <input
+                        id="nameInput"
+                        type="text"
+                        placeholder="مثلاً کیا"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="gender-title">
+                    جنسیت
+                </div>
+
+                <div class="gender-options">
+
+                    <button
+                        id="maleCard"
+                        class="gender-card"
+                        type="button"
+                    >
+                        <span class="gender-icon">♂</span>
+
+                        <span>
+                            پسر
+                        </span>
+
+                        <small>
+                            مشکی + سبز تیره
+                        </small>
+                    </button>
+
+
+                    <button
+                        id="femaleCard"
+                        class="gender-card"
+                        type="button"
+                    >
+                        <span class="gender-icon">♀</span>
+
+                        <span>
+                            دختر
+                        </span>
+
+                        <small>
+                            مشکی + زرشکی
+                        </small>
+                    </button>
+
+                </div>
+
+
+                <button
+                    id="continueBtn"
+                    class="primary-btn"
+                    type="button"
+                >
+                    بزن بریم
+                    <span>←</span>
+                </button>
+
+            </div>
+        </section>
+
+
+        <!-- QUESTIONS -->
+        <section
+            id="questionScreen"
+            class="screen"
+        >
+            <div class="glass question-card">
+
+                <div class="question-top">
+
+                    <span id="progressText">
+                        1 / 10
+                    </span>
+
+                    <span class="step-label">
+                        TYPE TEST
+                    </span>
+
+                </div>
+
+
+                <div class="progress-bar">
+                    <div
+                        id="progressFill"
+                        class="progress-fill"
+                    ></div>
+                </div>
+
+
+                <div class="question-content">
+
+                    <div class="question-number">
+                        0<span id="questionNumber">1</span>
+                    </div>
+
+                    <h2 id="questionTitle">
+                        کدام سبک بیشتر به سلیقه تو نزدیک است؟
+                    </h2>
+
+                    <div
+                        id="optionsContainer"
+                        class="options"
+                    ></div>
+
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ANALYZING -->
+        <section
+            id="analyzingScreen"
+            class="screen"
+        >
+            <div class="glass analyzing-card">
+
+                <div class="loader">
+
+                    <div class="loader-ring"></div>
+
+                    <div class="loader-dot"></div>
+
+                </div>
+
+                <div class="step-label">
+                    ANALYZING
+                </div>
+
+                <h2>
+                    داریم جواب‌هات رو
+                    <br>
+                    کنار هم می‌چینیم...
+                </h2>
+
+                <p id="analysisText">
+                    دارم جواب‌هات رو بررسی می‌کنم...
+                </p>
+
+                <div class="analysis-progress">
+                    <div
+                        id="analysisProgress"
+                        class="analysis-progress-fill"
+                    ></div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- RESULTS -->
+        <section
+            id="resultScreen"
+            class="screen"
+        >
+
+            <div class="result-wrapper">
+
+                <div class="result-header">
+
+                    <div class="step-label">
+                        YOUR RESULT
+                    </div>
+
+                    <h1>
+                        <span id="resultName">
+                            تو
+                        </span>
+                        ، این
+                        <span>TYPE</span>
+                        توئه.
+                    </h1>
+
+                </div>
+
+
+                <!-- TYPE -->
+                <div class="glass result-card type-card">
+
+                    <div class="result-card-label">
+                        YOUR TYPE
+                    </div>
+
+                    <h2 id="typeResult">
+                        Classic Type
+                    </h2>
+
+                    <p id="typeDescription">
+                        سلیقه‌ات بیشتر سمت چیزهای مرتب،
+                        باوقار و ماندگار می‌رود.
+                    </p>
+
+                </div>
+
+
+                <!-- PERSONALITY -->
+                <div class="glass result-card">
+
+                    <div class="result-card-label">
+                        PERSONALITY
+                    </div>
+
+                    <h2 id="personalityResult">
+                        آرام و عمیق
+                    </h2>
+
+                    <p>
+                        این نتیجه فقط بر اساس جواب‌های همین تست است
+                        و قرار نیست ذهن انسان را مثل دستگاه MRI بخواند.
+                    </p>
+
+                </div>
+
+
+                <!-- CELEBRITY -->
+                <div class="glass result-card match-card">
+
+                    <div class="result-card-label">
+                        CELEBRITY MATCH
+                    </div>
+
+                    <h2 id="celebrityResult">
+                        پارسا پیروزفر
+                    </h2>
+
+                    <div class="match-info">
+
+                        <div class="match-bar">
+                            <div
+                                id="matchFill"
+                                class="match-fill"
+                            ></div>
+                        </div>
+
+                        <strong id="matchPercentage">
+                            80%
+                        </strong>
+
+                    </div>
+
+                    <p id="matchDescription">
+                        بر اساس جواب‌هایی که دادی،
+                        از نظر سبک، ظاهر و وایب کلی
+                        بیشترین شباهت سلیقه‌ای تو با این گزینه دیده شد.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="restartBtn"
+                    class="secondary-btn"
+                    type="button"
+                >
+                    دوباره تست بده
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+  </html>
